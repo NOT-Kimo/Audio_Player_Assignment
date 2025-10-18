@@ -1,22 +1,7 @@
 #include "MainComponent.h"
-
 MainComponent::MainComponent()
 {
-    formatManager.registerBasicFormats();
-
-    // Add buttons
-    for (auto* btn : { &loadButton, &restartButton , & stopButton, &MuteButton, &loopButton })
-    {
-        btn->addListener(this);
-        addAndMakeVisible(btn);
-    }
-
-    // Volume slider
-    volumeSlider.setRange(0.0, 1.0, 0.01);
-    volumeSlider.setValue(0.5);
-    volumeSlider.addListener(this);
-    addAndMakeVisible(volumeSlider);
-
+	addAndMakeVisible(player1);
     setSize(500, 250);
     setAudioChannels(0, 2);
 
@@ -29,118 +14,33 @@ MainComponent::~MainComponent()
 
 void MainComponent::prepareToPlay(int samplesPerBlockExpected, double sampleRate)
 {
-    transportSource.prepareToPlay(samplesPerBlockExpected, sampleRate);
+    player1.prepareToPlay(samplesPerBlockExpected, sampleRate);
 }
 
 void MainComponent::getNextAudioBlock(const juce::AudioSourceChannelInfo& bufferToFill)
 {
-    transportSource.getNextAudioBlock(bufferToFill);
-    if (isLooping && !transportSource.isPlaying() && transportSource.getLengthInSeconds() > 0)
-    {
-        transportSource.setPosition(0.0);
-        transportSource.start();
-    }
+	bufferToFill.clearActiveBufferRegion();
+    player1.getnextAudioBlock(bufferToFill);
 
 }
 
 void MainComponent::releaseResources()
 {
-    transportSource.releaseResources();
+    player1.releaseResources();
 }
 
-void MainComponent::paint(juce::Graphics& g)
-{
-    g.fillAll(juce::Colours::darkgrey);
-}
 
 void MainComponent::resized()
 {
-    int y = 20;
-    loadButton.setBounds(20, y, 100, 40);
-    restartButton.setBounds(140, y, 80, 40);
-    stopButton.setBounds(240, y, 80, 40);
-	MuteButton.setBounds(340, y, 80, 40);
-    loopButton.setBounds(440, y, 100, 40);
-    /*prevButton.setBounds(340, y, 80, 40);
-    nextButton.setBounds(440, y, 80, 40);*/
-
-    volumeSlider.setBounds(20, 100, getWidth() - 40, 30);
+    player1.setBounds(20, 20, getWidth() - 40, 120);
 }
 
 void MainComponent::buttonClicked(juce::Button* button)
 {
-    if (button == &loadButton)
-    {
-        juce::FileChooser chooser("Select audio files...",
-            juce::File{},
-            "*.wav;*.mp3");
-
-        fileChooser = std::make_unique<juce::FileChooser>(
-            "Select an audio file...",
-            juce::File{},
-            "*.wav;*.mp3");
-
-        fileChooser->launchAsync(
-            juce::FileBrowserComponent::openMode | juce::FileBrowserComponent::canSelectFiles,
-            [this](const juce::FileChooser& fc)
-            {
-                auto file = fc.getResult();
-                if (file.existsAsFile())
-                {
-                    if (auto* reader = formatManager.createReaderFor(file))
-                    {
-                        // 🔑 Disconnect old source first
-                        transportSource.stop();
-                        transportSource.setSource(nullptr);
-                        readerSource.reset();
-
-                        // Create new reader source
-                        readerSource = std::make_unique<juce::AudioFormatReaderSource>(reader, true);
-
-                        // Attach safely
-                        transportSource.setSource(readerSource.get(),
-                            0,
-                            nullptr,
-                            reader->sampleRate);
-                        transportSource.start();
-                    }
-                }
-            });
-    }
-
-    if (button == &restartButton)
-    {
-        transportSource.start();
-    }
-
-    if (button == &stopButton)
-    {
-        transportSource.stop();
-        transportSource.setPosition(0.0);
-    }
-    if (button == &MuteButton) {
-        if (transportSource.getGain() > 0)
-        {
-			transportSource.setGain(0);
-			button->setButtonText("Unmute");
-        }
-        else
-        {
-			transportSource.setGain(volumeSlider.getValue());
-			button->setButtonText("Mute");
-        }
-    }
-    if (button == &loopButton)
-    {
-        isLooping = !isLooping;
-        loopButton.setButtonText(isLooping ? "Loop: On" : "Loop: Off");
-    }
-
+	player1.buttonClicked(button);
 }
 
 void MainComponent::sliderValueChanged(juce::Slider* slider)
 {
-    if (slider == &volumeSlider)
-        transportSource.setGain((float)slider->getValue());
+	player1.sliderValueChanged(slider);
 }
-
