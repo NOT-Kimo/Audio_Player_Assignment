@@ -13,12 +13,15 @@ public:
     void play();
     void stop();
     void restart();
+    void gostart();
+    void goend();
     void setGain(float gain);
     void setPosition(double position);
     double getPostion() const;
     double getGain() const;
     bool mute();
     bool loop();
+    bool isPlaying();
 
 
 private:

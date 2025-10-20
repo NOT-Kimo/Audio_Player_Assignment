@@ -1,4 +1,4 @@
-﻿#include <JuceHeader.h>
+#include <JuceHeader.h>
 #include "PlayerAudio.h"
 
 PlayerAudio::PlayerAudio()
@@ -69,6 +69,15 @@ void PlayerAudio::restart()
     transportSource.setPosition(0.0);
     transportSource.start();
 }
+void PlayerAudio::gostart()
+{
+    transportSource.setPosition(0.0);
+}
+void PlayerAudio::goend()
+{
+    double len = transportSource.getLengthInSeconds();
+    transportSource.setPosition(len);
+}
 void PlayerAudio::setGain(float gain)
 {
     transportSource.setGain(gain);
@@ -102,4 +111,8 @@ bool PlayerAudio::loop()
 {
     isLooping = !isLooping;
     return isLooping;
+}
+bool PlayerAudio::isPlaying()
+{
+    return transportSource.isPlaying();
 }

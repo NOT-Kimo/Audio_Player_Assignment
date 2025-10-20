@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include <JuceHeader.h>
 #include "PlayerAudio.h"
 //==============================================================================
@@ -18,14 +18,17 @@ public:
 
 private:
 	PlayerAudio playerAudio;
-	
+    
     juce::TextButton loadButton{ "Load" };
     juce::TextButton restartButton{ "Restart" };
-    juce::TextButton stopButton{ "Stop" };
+    juce::TextButton gotostartButton{ "|<<" };
+    juce::TextButton PlayPauseButton{ "Play > " };
+    juce::TextButton gotoendButton{ ">>|" };
     juce::TextButton MuteButton{ "Mute" };
     juce::Slider volumeSlider;
     juce::TextButton loopButton{ "Loop: Off" };
 	bool isLooping = false;
+    bool isplaying = true;
 
     
 	public:

@@ -1,10 +1,10 @@
-#include <JuceHeader.h>
+﻿#include <JuceHeader.h>
 #include "PlayerGUI.h"
 
 PlayerGUI::PlayerGUI()
 {
     //volume slider
-    for (auto* btn : { &loadButton, &restartButton , &stopButton, &MuteButton, &loopButton })
+    for (auto* btn : { &loadButton, &restartButton ,&gotostartButton , &PlayPauseButton , &gotoendButton , &MuteButton, &loopButton })
     {
         btn->addListener(this);
         addAndMakeVisible(btn);
@@ -25,13 +25,13 @@ void PlayerGUI::resized()
     int y = 20;
     loadButton.setBounds(20, y, 100, 40);
     restartButton.setBounds(140, y, 80, 40);
-    stopButton.setBounds(240, y, 80, 40);
-    MuteButton.setBounds(340, y, 80, 40);
-    loopButton.setBounds(440, y, 100, 40);
-    /*prevButton.setBounds(340, y, 80, 40);
-    nextButton.setBounds(440, y, 80, 40);*/
+    gotostartButton.setBounds(240, y, 50, 40);
+    PlayPauseButton.setBounds(310, y, 100, 40);
+    gotoendButton.setBounds(430, y, 50, 40);
+    MuteButton.setBounds(500, y, 80, 40);
+    loopButton.setBounds(600, y, 100, 40);
 
-    volumeSlider.setBounds(10, 60, getWidth() - 20, 30);
+    volumeSlider.setBounds(10, 80, getWidth() - 20, 30);
 }
 
 void PlayerGUI::prepareToPlay(int samplesPerBlockExpected, double sampleRate)
@@ -72,14 +72,37 @@ void PlayerGUI::buttonClicked(juce::Button* button)
                    
                 }
             });
+        PlayPauseButton.setButtonText("Pause || ");
     }
     else if (button == &restartButton)
     {
         playerAudio.restart();
+        PlayPauseButton.setButtonText("Pause || ");
     }
-    else if (button == &stopButton)
+    else if (button == &gotostartButton)
     {
+        playerAudio.gostart();
         playerAudio.stop();
+        PlayPauseButton.setButtonText("Play > ");
+    }
+    else if (button == &PlayPauseButton)
+    {
+        if (playerAudio.isPlaying())
+        {
+            playerAudio.stop();
+            PlayPauseButton.setButtonText("Play > ");
+        }
+        else
+        {
+            playerAudio.play();
+            PlayPauseButton.setButtonText("Pause || ");
+        }
+    }
+    else if (button == &gotoendButton)
+    {
+        playerAudio.goend();
+        playerAudio.stop();
+        PlayPauseButton.setButtonText("Play > ");
     }
     else if (button == &MuteButton)
     {
@@ -91,6 +114,7 @@ void PlayerGUI::buttonClicked(juce::Button* button)
         isLooping = !isLooping;
         playerAudio.loop();
         loopButton.setButtonText(isLooping ? "Loop: On" : "Loop: Off");
+        PlayPauseButton.setButtonText(isplaying ? "Pause || " : "Play > ");
     }
 }
 void PlayerGUI::sliderValueChanged(juce::Slider* slider)
