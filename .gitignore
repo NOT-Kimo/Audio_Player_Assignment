@@ -4,6 +4,7 @@
 # But track these important files
 !.gitignore
 !README.md
+!*.jucer
 
 # Track the entire Source folder
 !Source/

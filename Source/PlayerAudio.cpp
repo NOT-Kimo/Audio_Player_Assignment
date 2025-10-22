@@ -94,7 +94,7 @@ double PlayerAudio::getGain() const
 {
     return transportSource.getGain();
 }
-bool PlayerAudio::mute()
+bool PlayerAudio::mute(double last_gain)
 {
     if (transportSource.getGain() > 0)
     {
@@ -103,7 +103,7 @@ bool PlayerAudio::mute()
     }
     else
     {
-        transportSource.setGain(1.0f); 
+        transportSource.setGain(last_gain); 
         return false;
     }
 }
