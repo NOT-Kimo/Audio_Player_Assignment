@@ -18,12 +18,18 @@ void PlayerAudio::prepareToPlay(int samplesPerBlockExpected, double sampleRate)
 
 void PlayerAudio::getNextAudioBlock(const juce::AudioSourceChannelInfo& bufferToFill)
 {
-    transportSource.getNextAudioBlock(bufferToFill);
-    if (isLooping && !transportSource.isPlaying() && transportSource.getLengthInSeconds() > 0)
+    if (isLooping && readerSource != nullptr)
     {
-        transportSource.setPosition(0.0);
-        transportSource.start();
+        auto currentPos = transportSource.getCurrentPosition();
+        auto totalLength = transportSource.getLengthInSeconds();
+
+        if (currentPos >= totalLength - 0.01 && transportSource.isPlaying())
+        {
+            transportSource.setPosition(0.0);
+        }
     }
+
+    transportSource.getNextAudioBlock(bufferToFill);
 }
 
 void PlayerAudio::releaseResources()
@@ -58,6 +64,10 @@ bool PlayerAudio::loadFile(const juce::File& file)
 }
 void PlayerAudio::play()
 {
+    if (isLooping && transportSource.getCurrentPosition() >= transportSource.getLengthInSeconds() - 0.01)
+    {
+        transportSource.setPosition(0.0);
+    }
     transportSource.start();
 }
 void PlayerAudio::stop()

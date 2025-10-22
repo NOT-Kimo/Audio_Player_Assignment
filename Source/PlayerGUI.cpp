@@ -108,7 +108,7 @@ void PlayerGUI::buttonClicked(juce::Button* button)
     else if (button == &MuteButton)
     {
         bool isMuted = playerAudio.mute(volumeSlider.getValue());
-        MuteButton.setButtonText(isMuted ? " <x " : " <)) ");
+        MuteButton.setButtonText(isMuted ? " UNMUTE " : " MUTE ");
     }
     else if (button == &loopButton)
     {
