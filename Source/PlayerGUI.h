@@ -24,7 +24,7 @@ private:
     juce::TextButton gotostartButton{ "|<<" };
     juce::TextButton PlayPauseButton{ "Play > " };
     juce::TextButton gotoendButton{ ">>|" };
-    juce::TextButton MuteButton{ "<))" };
+    juce::TextButton MuteButton{ "MUTE" };
     juce::Slider volumeSlider;
     juce::TextButton loopButton{ "Loop: Off" };
 	bool isLooping = false;
