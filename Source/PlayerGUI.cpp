@@ -10,8 +10,8 @@ PlayerGUI::PlayerGUI()
         addAndMakeVisible(btn);
     }
     // Volume slider
-    volumeSlider.setRange(0.0, 10.0, 0.1);
-    volumeSlider.setValue(5.0);
+    volumeSlider.setRange(0.0, 1.0, 0.01);
+    volumeSlider.setValue(0.5);
     volumeSlider.addListener(this);
     addAndMakeVisible(volumeSlider);
 
