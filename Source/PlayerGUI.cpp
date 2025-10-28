@@ -14,24 +14,38 @@ PlayerGUI::PlayerGUI()
     volumeSlider.setValue(0.5);
     volumeSlider.addListener(this);
     addAndMakeVisible(volumeSlider);
+    positionSlider.setRange(0.0, 1.0, 0.001);
+    positionSlider.setValue(0.0);
+    positionSlider.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
+    positionSlider.addListener(this);
+    addAndMakeVisible(positionSlider);
+    timeLabel.setText("00:00 / 00:00", juce::dontSendNotification);
+    timeLabel.setJustificationType(juce::Justification::centred);
+    addAndMakeVisible(timeLabel);
+    startTimer(33);
 
 }
 
-PlayerGUI::~PlayerGUI() {}
+PlayerGUI::~PlayerGUI() {
+    stopTimer();
+}
 
 
 void PlayerGUI::resized()
 {
-    int y = 80;
-    loadButton.setBounds(20, y, 100, 40);
-    restartButton.setBounds(140, y, 80, 40);
-    gotostartButton.setBounds(240, y, 50, 40);
-    PlayPauseButton.setBounds(310, y, 100, 40);
-    gotoendButton.setBounds(430, y, 50, 40);
-    MuteButton.setBounds(500, y, 80, 40);
-    loopButton.setBounds(600, y, 100, 40);
+    
+    int buttonY = 115;
+    loadButton.setBounds(20, buttonY, 100, 40);
+    restartButton.setBounds(130, buttonY, 80, 40);
+    gotostartButton.setBounds(220, buttonY, 50, 40);
+    PlayPauseButton.setBounds(280, buttonY, 100, 40);
+    gotoendButton.setBounds(390, buttonY, 50, 40);
+    MuteButton.setBounds(450, buttonY, 80, 40);
+    loopButton.setBounds(540, buttonY, 100, 40);
+    volumeSlider.setBounds(20, 10, getWidth() - 40, 30);
+    positionSlider.setBounds(20, 50, getWidth() - 40, 30);
+    timeLabel.setBounds(20, 85, getWidth() - 40, 20);
 
-    volumeSlider.setBounds(10, 20, getWidth() - 20, 30);
 }
 
 void PlayerGUI::prepareToPlay(int samplesPerBlockExpected, double sampleRate)
@@ -47,6 +61,33 @@ void PlayerGUI::getnextAudioBlock(const juce::AudioSourceChannelInfo& bufferToFi
 void PlayerGUI::releaseResources()
 {
     playerAudio.releaseResources();
+}
+void PlayerGUI::timerCallback()
+{
+    double currentPos = playerAudio.getPostion();
+    double totalLength = playerAudio.getTotalLength();
+
+    if (totalLength > 0.0)
+    {
+        
+        if (!positionSlider.isMouseButtonDown())
+        {
+            isUserDragging = false;
+            positionSlider.setValue(currentPos / totalLength, juce::dontSendNotification);
+        }
+
+        
+        timeLabel.setText(formatTime(currentPos) + " / " + formatTime(totalLength),
+            juce::dontSendNotification);
+    }
+}
+juce::String PlayerGUI::formatTime(double seconds)
+{
+    int totalSeconds = static_cast<int>(seconds);
+    int minutes = totalSeconds / 60;
+    int secs = totalSeconds % 60;
+
+    return juce::String::formatted("%02d:%02d", minutes, secs);
 }
 
 void PlayerGUI::buttonClicked(juce::Button* button)
@@ -69,6 +110,7 @@ void PlayerGUI::buttonClicked(juce::Button* button)
                 if (files.existsAsFile())
                 {
                     playerAudio.loadFile(files);
+                    positionSlider.setValue(0.0, juce::dontSendNotification);
                    
                 }
             });
@@ -123,5 +165,15 @@ void PlayerGUI::sliderValueChanged(juce::Slider* slider)
     if (slider == &volumeSlider)
     {
         playerAudio.setGain(volumeSlider.getValue());
+    }
+    else if (slider == &positionSlider)
+    {
+        // User is dragging or clicked on the slider
+        isUserDragging = true;
+        double totalLength = playerAudio.getTotalLength();
+        double newPosition = positionSlider.getValue() * totalLength;
+        playerAudio.setPosition(newPosition);
+        timeLabel.setText(formatTime(newPosition) + " / " + formatTime(totalLength),
+            juce::dontSendNotification);
     }
 }

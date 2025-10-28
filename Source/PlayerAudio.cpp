@@ -104,6 +104,10 @@ double PlayerAudio::getGain() const
 {
     return transportSource.getGain();
 }
+double PlayerAudio::getTotalLength() const
+{
+    return transportSource.getLengthInSeconds();
+}
 bool PlayerAudio::mute(double last_gain)
 {
     if (transportSource.getGain() > 0)

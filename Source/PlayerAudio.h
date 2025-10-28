@@ -19,6 +19,7 @@ public:
     void setPosition(double position);
     double getPostion() const;
     double getGain() const;
+    double getTotalLength() const;
     bool mute(double last_gain);
     bool loop();
     bool isPlaying();

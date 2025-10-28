@@ -6,7 +6,9 @@
 */
 class PlayerGUI : public juce::Component,
                   public juce::Button::Listener,
-                  public juce::Slider::Listener
+                  public juce::Slider::Listener,
+                  public juce::Timer
+
 {
 public:
     PlayerGUI();
@@ -15,6 +17,7 @@ public:
 	void prepareToPlay(int samplesPerBlockExpected, double sampleRate);
 	void getnextAudioBlock(const juce::AudioSourceChannelInfo& bufferToFill);
 	void releaseResources();
+    void timerCallback() override;
 
 private:
 	PlayerAudio playerAudio;
@@ -27,8 +30,12 @@ private:
     juce::TextButton MuteButton{ "MUTE" };
     juce::Slider volumeSlider;
     juce::TextButton loopButton{ "Loop: Off" };
+    juce::Slider positionSlider;
+    juce::Label timeLabel;
 	bool isLooping = false;
     bool isplaying = true;
+    bool isUserDragging = false;
+    juce::String formatTime(double seconds);
 
     
 	public:
