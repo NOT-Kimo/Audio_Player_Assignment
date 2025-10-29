@@ -32,13 +32,14 @@ private:
     juce::TextButton loopButton{ "Loop: Off" };
     juce::Slider positionSlider;
     juce::Label timeLabel;
+	juce::Slider speedSlider;
 	bool isLooping = false;
     bool isplaying = true;
     bool isUserDragging = false;
     juce::String formatTime(double seconds);
 
     
-	public:
+public:
     void sliderValueChanged(juce::Slider* slider) override;
     void buttonClicked(juce::Button* button) override;
     std::unique_ptr<juce::FileChooser> fileChooser;

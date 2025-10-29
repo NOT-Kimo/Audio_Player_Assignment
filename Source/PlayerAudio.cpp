@@ -3,17 +3,18 @@
 
 PlayerAudio::PlayerAudio()
 {
-	formatManager.registerBasicFormats();
+    formatManager.registerBasicFormats();
 }
 
 PlayerAudio::~PlayerAudio()
 {
-	releaseResources();
+    releaseResources();
 }
 
 void PlayerAudio::prepareToPlay(int samplesPerBlockExpected, double sampleRate)
 {
     transportSource.prepareToPlay(samplesPerBlockExpected, sampleRate);
+	resampleSource.prepareToPlay(samplesPerBlockExpected, sampleRate);
 }
 
 void PlayerAudio::getNextAudioBlock(const juce::AudioSourceChannelInfo& bufferToFill)
@@ -28,8 +29,12 @@ void PlayerAudio::getNextAudioBlock(const juce::AudioSourceChannelInfo& bufferTo
             transportSource.setPosition(0.0);
         }
     }
+    if (readerSource == nullptr) {
+		bufferToFill.clearActiveBufferRegion();
+        return;
+    }
 
-    transportSource.getNextAudioBlock(bufferToFill);
+    resampleSource.getNextAudioBlock(bufferToFill);
 }
 
 void PlayerAudio::releaseResources()
@@ -117,7 +122,7 @@ bool PlayerAudio::mute(double last_gain)
     }
     else
     {
-        transportSource.setGain(last_gain); 
+        transportSource.setGain(last_gain);
         return false;
     }
 }
@@ -129,4 +134,8 @@ bool PlayerAudio::loop()
 bool PlayerAudio::isPlaying()
 {
     return transportSource.isPlaying();
+}
+void PlayerAudio::setSpeed(double speed)
+{
+   resampleSource.setResamplingRatio (speed);
 }

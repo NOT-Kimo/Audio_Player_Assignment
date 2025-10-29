@@ -1,7 +1,7 @@
 #pragma once
 #include "JuceHeader.h"
 
-class PlayerAudio  : public juce::Component
+class PlayerAudio : public juce::Component
 {
 public:
     PlayerAudio();
@@ -23,13 +23,17 @@ public:
     bool mute(double last_gain);
     bool loop();
     bool isPlaying();
+	void setSpeed(double speed);
 
 
 private:
-	juce::AudioFormatManager formatManager;
-	std::unique_ptr<juce::AudioFormatReaderSource> readerSource;
-	juce::AudioTransportSource transportSource;
+    juce::AudioFormatManager formatManager;
+    std::unique_ptr<juce::AudioFormatReaderSource> readerSource;
+    juce::AudioTransportSource transportSource;
+	juce::ResamplingAudioSource resampleSource{ &transportSource, false, 2 };
+
+
     bool isLooping = false;
 
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (PlayerAudio)
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(PlayerAudio)
 };

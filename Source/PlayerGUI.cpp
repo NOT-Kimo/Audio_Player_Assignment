@@ -14,6 +14,7 @@ PlayerGUI::PlayerGUI()
     volumeSlider.setValue(0.5);
     volumeSlider.addListener(this);
     addAndMakeVisible(volumeSlider);
+
     positionSlider.setRange(0.0, 1.0, 0.001);
     positionSlider.setValue(0.0);
     positionSlider.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
@@ -24,6 +25,11 @@ PlayerGUI::PlayerGUI()
     addAndMakeVisible(timeLabel);
     startTimer(33);
 
+	speedSlider.setRange(0.25, 4.0, 0.01);
+	speedSlider.setSkewFactorFromMidPoint(1.0);
+	speedSlider.setValue(1.0);
+	speedSlider.addListener(this);
+    addAndMakeVisible(speedSlider);
 }
 
 PlayerGUI::~PlayerGUI() {
@@ -45,6 +51,7 @@ void PlayerGUI::resized()
     volumeSlider.setBounds(20, 10, getWidth() - 40, 30);
     positionSlider.setBounds(20, 50, getWidth() - 40, 30);
     timeLabel.setBounds(20, 85, getWidth() - 40, 20);
+	speedSlider.setBounds(20, 100, getWidth() - 40, 30);
 
 }
 
@@ -175,5 +182,9 @@ void PlayerGUI::sliderValueChanged(juce::Slider* slider)
         playerAudio.setPosition(newPosition);
         timeLabel.setText(formatTime(newPosition) + " / " + formatTime(totalLength),
             juce::dontSendNotification);
+    }
+    else if (slider == &speedSlider)
+    {
+		playerAudio.setSpeed(speedSlider.getValue());
     }
 }
