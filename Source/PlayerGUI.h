@@ -33,10 +33,12 @@ private:
     juce::Slider positionSlider;
     juce::Label timeLabel;
 	juce::Slider speedSlider;
+    juce::Label metadata;
 	bool isLooping = false;
     bool isplaying = true;
     bool isUserDragging = false;
     juce::String formatTime(double seconds);
+    void getMetadata(const juce::File& file);
 
     
 public:

@@ -20,10 +20,15 @@ PlayerGUI::PlayerGUI()
     positionSlider.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
     positionSlider.addListener(this);
     addAndMakeVisible(positionSlider);
+
     timeLabel.setText("00:00 / 00:00", juce::dontSendNotification);
     timeLabel.setJustificationType(juce::Justification::centred);
     addAndMakeVisible(timeLabel);
     startTimer(33);
+
+    metadata.setText("No file loaded", juce::dontSendNotification);
+    metadata.setJustificationType(juce::Justification::centred);
+    addAndMakeVisible(metadata);
 
 	speedSlider.setRange(0.25, 4.0, 0.01);
 	speedSlider.setSkewFactorFromMidPoint(1.0);
@@ -40,18 +45,19 @@ PlayerGUI::~PlayerGUI() {
 void PlayerGUI::resized()
 {
     
-    int buttonY = 115;
-    loadButton.setBounds(20, buttonY, 100, 40);
-    restartButton.setBounds(130, buttonY, 80, 40);
-    gotostartButton.setBounds(220, buttonY, 50, 40);
-    PlayPauseButton.setBounds(280, buttonY, 100, 40);
-    gotoendButton.setBounds(390, buttonY, 50, 40);
-    MuteButton.setBounds(450, buttonY, 80, 40);
-    loopButton.setBounds(540, buttonY, 100, 40);
+    int buttonY = 180;
+    loadButton.setBounds(30, buttonY, 100, 40);
+    restartButton.setBounds(140, buttonY, 80, 40);
+    gotostartButton.setBounds(230, buttonY, 50, 40);
+    PlayPauseButton.setBounds(290, buttonY, 100, 40);
+    gotoendButton.setBounds(400, buttonY, 50, 40);
+    MuteButton.setBounds(460, buttonY, 80, 40);
+    loopButton.setBounds(550, buttonY, 100, 40);
     volumeSlider.setBounds(20, 10, getWidth() - 40, 30);
     positionSlider.setBounds(20, 50, getWidth() - 40, 30);
-    timeLabel.setBounds(20, 85, getWidth() - 40, 20);
+    timeLabel.setBounds(20, 80, getWidth() - 40, 20);
 	speedSlider.setBounds(20, 100, getWidth() - 40, 30);
+    metadata.setBounds(10, 130, getWidth() - 20, 30);
 
 }
 
@@ -88,6 +94,7 @@ void PlayerGUI::timerCallback()
             juce::dontSendNotification);
     }
 }
+
 juce::String PlayerGUI::formatTime(double seconds)
 {
     int totalSeconds = static_cast<int>(seconds);
@@ -96,6 +103,35 @@ juce::String PlayerGUI::formatTime(double seconds)
 
     return juce::String::formatted("%02d:%02d", minutes, secs);
 }
+
+void PlayerGUI::getMetadata(const juce::File& file)
+{
+    juce::AudioFormatManager formatManager;
+    formatManager.registerBasicFormats();
+
+    std::unique_ptr<juce::AudioFormatReader> reader(formatManager.createReaderFor(file));
+
+    if (reader != nullptr)
+    {
+        juce::String title = reader->metadataValues.getValue("title", "");
+        juce::String artist = reader->metadataValues.getValue("artist", "");
+
+        double totalLength = reader->lengthInSamples / reader->sampleRate;
+        juce::String durationStr = formatTime(totalLength);
+
+        juce::String info;
+        if (title.isNotEmpty() || artist.isNotEmpty())
+        { info = title + " - " + artist + " (" + durationStr + ")"; }
+        else 
+        { info = file.getFileNameWithoutExtension() + " (" + durationStr + ")";}
+        metadata.setText(info, juce::dontSendNotification);
+    }
+    else
+    {
+        metadata.setText(file.getFileNameWithoutExtension(), juce::dontSendNotification);
+    }
+}
+
 
 void PlayerGUI::buttonClicked(juce::Button* button)
 {
@@ -119,6 +155,11 @@ void PlayerGUI::buttonClicked(juce::Button* button)
                     playerAudio.loadFile(files);
                     positionSlider.setValue(0.0, juce::dontSendNotification);
                    
+                }
+                if (playerAudio.loadFile(files))
+                {
+                    positionSlider.setValue(0.0, juce::dontSendNotification);
+                    getMetadata(files);
                 }
             });
         PlayPauseButton.setButtonText("Pause || ");
