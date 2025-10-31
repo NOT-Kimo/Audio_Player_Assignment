@@ -19,6 +19,7 @@ PlayerGUI::PlayerGUI()
     positionSlider.setValue(0.0);
     positionSlider.setTextBoxStyle(juce::Slider::NoTextBox, false, 0, 0);
     positionSlider.addListener(this);
+	positionSlider.setSliderStyle(juce::Slider::LinearBar);
     addAndMakeVisible(positionSlider);
 
     timeLabel.setText("00:00 / 00:00", juce::dontSendNotification);
@@ -56,7 +57,7 @@ void PlayerGUI::resized()
     volumeSlider.setBounds(20, 10, getWidth() - 40, 30);
     positionSlider.setBounds(20, 50, getWidth() - 40, 30);
     timeLabel.setBounds(20, 80, getWidth() - 40, 20);
-	speedSlider.setBounds(20, 100, getWidth() - 40, 30);
+	speedSlider.setBounds(20, 100, 150, 30);
     metadata.setBounds(10, 130, getWidth() - 20, 30);
 
 }
@@ -125,13 +126,14 @@ void PlayerGUI::getMetadata(const juce::File& file)
         else 
         { info = file.getFileNameWithoutExtension() + " (" + durationStr + ")";}
         metadata.setText(info, juce::dontSendNotification);
+
     }
     else
     {
         metadata.setText(file.getFileNameWithoutExtension(), juce::dontSendNotification);
+        
     }
 }
-
 
 void PlayerGUI::buttonClicked(juce::Button* button)
 {

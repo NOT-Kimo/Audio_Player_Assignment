@@ -2,7 +2,13 @@
 MainComponent::MainComponent()
 {
 	addAndMakeVisible(player1);
-    setSize(500, 250);
+	addAndMakeVisible(player2);
+
+	addPlayerButton.addListener(this);
+	addAndMakeVisible(addPlayerButton);
+    player2.setVisible(false);
+
+    setSize(1280, 1000);
     setAudioChannels(0, 2);
 
 }
@@ -15,32 +21,68 @@ MainComponent::~MainComponent()
 void MainComponent::prepareToPlay(int samplesPerBlockExpected, double sampleRate)
 {
     player1.prepareToPlay(samplesPerBlockExpected, sampleRate);
+	player2.prepareToPlay(samplesPerBlockExpected, sampleRate);
+
 }
 
 void MainComponent::getNextAudioBlock(const juce::AudioSourceChannelInfo& bufferToFill)
 {
+	
 	bufferToFill.clearActiveBufferRegion();
-    player1.getnextAudioBlock(bufferToFill);
+    juce::AudioBuffer<float> tempBuffer(bufferToFill.buffer->getNumChannels(), bufferToFill.numSamples);
+
+    juce::AudioSourceChannelInfo tempInfo(&tempBuffer, 0, bufferToFill.numSamples);
+    player1.getnextAudioBlock(tempInfo);
+
+    for (int channel = 0; channel < bufferToFill.buffer->getNumChannels(); ++channel)
+    {
+        bufferToFill.buffer->addFrom(channel, bufferToFill.startSample, tempBuffer, channel, 0, bufferToFill.numSamples);
+    }
+
+    tempBuffer.clear();
+    player2.getnextAudioBlock(tempInfo);
+
+    for (int channel = 0; channel < bufferToFill.buffer->getNumChannels(); ++channel)
+    {
+        bufferToFill.buffer->addFrom(channel, bufferToFill.startSample, tempBuffer, channel, 0, bufferToFill.numSamples);
+    }
+    
+	
 
 }
 
 void MainComponent::releaseResources()
 {
     player1.releaseResources();
-}
+	player2.releaseResources();
 
+}
 
 void MainComponent::resized()
 {
+    addPlayerButton.setBounds(20, 280, 150, 30);
+
     player1.setBounds(20, 20, getWidth() - 40, 250);
+	player2.setBounds(20, 300, getWidth() - 40, 250);
 }
 
 void MainComponent::buttonClicked(juce::Button* button)
 {
-	player1.buttonClicked(button);
+    if(button == &addPlayerButton)
+    {
+		bool isvisible = player2.isVisible();
+        player2.setVisible(!isvisible);
+        addPlayerButton.setButtonText(isvisible ? "Show Player 2" : "Hide Player 2");
+    }
+    else 
+    {
+        player1.buttonClicked(button);
+        player2.buttonClicked(button);
+    }
 }
 
 void MainComponent::sliderValueChanged(juce::Slider* slider)
 {
 	player1.sliderValueChanged(slider);
+	player2.sliderValueChanged(slider);
 }

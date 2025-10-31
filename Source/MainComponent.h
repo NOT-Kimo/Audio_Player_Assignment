@@ -26,6 +26,9 @@ public:
 
 private:
     PlayerGUI player1;
+	PlayerGUI player2;
+
+	juce::TextButton addPlayerButton{ "Add Player2" };
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(MainComponent)
 };
