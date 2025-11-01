@@ -60,10 +60,11 @@ void MainComponent::releaseResources()
 
 void MainComponent::resized()
 {
-    addPlayerButton.setBounds(20, 320, 150, 30);
+    int buttony = 320;
+    addPlayerButton.setBounds(20, buttony, 150, 30);
 
     player1.setBounds(20, 20, getWidth() - 40, 280);
-	player2.setBounds(20, 300, getWidth() - 40, 280);
+	player2.setBounds(20, buttony + 50, getWidth() - 40, 280);
 }
 
 void MainComponent::buttonClicked(juce::Button* button)

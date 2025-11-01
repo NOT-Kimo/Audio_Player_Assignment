@@ -48,7 +48,6 @@ PlayerGUI::~PlayerGUI() {
 
 void PlayerGUI::resized()
 {
-    
     int buttonY = 180;
     loadButton.setBounds(30, buttonY, 100, 40);
     restartButton.setBounds(140, buttonY, 80, 40);
@@ -68,6 +67,7 @@ void PlayerGUI::resized()
     setBButton.setBounds(100, 230, 60, 40);
     clearABButton.setBounds(170, 230, 80, 40);
     abLoopButton.setBounds(260, 230, 100, 40);
+    
     
 }
 
