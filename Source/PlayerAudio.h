@@ -24,6 +24,15 @@ public:
     bool loop();
     bool isPlaying();
 	void setSpeed(double speed);
+    void setABLoop(bool enabled);
+    bool isABLoopEnabled() const { return abLoopEnabled; }
+    void setPointA(double position);
+    void setPointB(double position);
+    double getPointA() const { return pointA; }
+    double getPointB() const { return pointB; }
+    void clearABPoints();
+    void skipForward(double seconds);
+    void skipBackward(double seconds);
 
 
 private:
@@ -34,6 +43,8 @@ private:
 
 
     bool isLooping = false;
-
+    bool abLoopEnabled = false;
+    double pointA = -1.0;
+    double pointB = -1.0;
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(PlayerAudio)
 };

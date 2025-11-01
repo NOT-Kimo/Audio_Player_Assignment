@@ -19,6 +19,8 @@ void PlayerAudio::prepareToPlay(int samplesPerBlockExpected, double sampleRate)
 
 void PlayerAudio::getNextAudioBlock(const juce::AudioSourceChannelInfo& bufferToFill)
 {
+    
+    // Handle normal looping
     if (isLooping && readerSource != nullptr)
     {
         auto currentPos = transportSource.getCurrentPosition();
@@ -29,9 +31,23 @@ void PlayerAudio::getNextAudioBlock(const juce::AudioSourceChannelInfo& bufferTo
             transportSource.setPosition(0.0);
         }
     }
+    
     if (readerSource == nullptr) {
-		bufferToFill.clearActiveBufferRegion();
+        bufferToFill.clearActiveBufferRegion();
         return;
+    }
+    else if (abLoopEnabled && pointA >= 0.0 && pointB > pointA && readerSource != nullptr)
+    {
+        auto currentPos = transportSource.getCurrentPosition();
+
+        if (currentPos >= pointB && transportSource.isPlaying())
+        {
+            transportSource.setPosition(pointA);
+        }
+        else if (currentPos < pointA)
+        {
+            transportSource.setPosition(pointA);
+        }
     }
 
     resampleSource.getNextAudioBlock(bufferToFill);
@@ -138,4 +154,40 @@ bool PlayerAudio::isPlaying()
 void PlayerAudio::setSpeed(double speed)
 {
    resampleSource.setResamplingRatio (speed);
+}
+void PlayerAudio::setABLoop(bool enabled)
+{
+    abLoopEnabled = enabled;
+}
+
+void PlayerAudio::setPointA(double position)
+{
+    pointA = position;
+}
+
+void PlayerAudio::setPointB(double position)
+{
+    pointB = position;
+}
+
+void PlayerAudio::clearABPoints()
+{
+    pointA = -1.0;
+    pointB = -1.0;
+    abLoopEnabled = false;
+}
+
+void PlayerAudio::skipForward(double seconds)
+{
+    double currentPos = transportSource.getCurrentPosition();
+    double totalLength = transportSource.getLengthInSeconds();
+    double newPos = juce::jmin(currentPos + seconds, totalLength);
+    transportSource.setPosition(newPos);
+}
+
+void PlayerAudio::skipBackward(double seconds)
+{
+    double currentPos = transportSource.getCurrentPosition();
+    double newPos = juce::jmax(currentPos - seconds, 0.0);
+    transportSource.setPosition(newPos);
 }

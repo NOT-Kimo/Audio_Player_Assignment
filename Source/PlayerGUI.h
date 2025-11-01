@@ -18,6 +18,7 @@ public:
 	void getnextAudioBlock(const juce::AudioSourceChannelInfo& bufferToFill);
 	void releaseResources();
     void timerCallback() override;
+    
 
 
 private:
@@ -36,10 +37,17 @@ private:
 	juce::Slider speedSlider;
     juce::Label metadata;
 	bool isLooping = false;
+    bool isABLooping = false;
     bool isplaying = true;
     bool isUserDragging = false;
     juce::String formatTime(double seconds);
     void getMetadata(const juce::File& file);
+    juce::TextButton setAButton{ "Set A" };
+    juce::TextButton setBButton{ "Set B" };
+    juce::TextButton clearABButton{ "Clear AB" };
+    juce::TextButton abLoopButton{ "AB Loop: Off" };
+    juce::TextButton skipBackButton{ "Backward 10s" };
+    juce::TextButton skipForwardButton{ "Forward 10s" };
 
     
 public:

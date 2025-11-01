@@ -4,7 +4,9 @@
 PlayerGUI::PlayerGUI()
 {
    
-    for (auto* btn : { &loadButton, &restartButton ,&gotostartButton , &PlayPauseButton , &gotoendButton , &MuteButton, &loopButton })
+    for (auto* btn : { &loadButton, &restartButton, &gotostartButton, &PlayPauseButton,
+                   &gotoendButton, &MuteButton, &loopButton, &setAButton, &setBButton,
+                   &clearABButton, &abLoopButton, &skipBackButton, &skipForwardButton })
     {
         btn->addListener(this);
         addAndMakeVisible(btn);
@@ -36,6 +38,7 @@ PlayerGUI::PlayerGUI()
 	speedSlider.setValue(1.0);
 	speedSlider.addListener(this);
     addAndMakeVisible(speedSlider);
+
 }
 
 PlayerGUI::~PlayerGUI() {
@@ -52,15 +55,22 @@ void PlayerGUI::resized()
     gotostartButton.setBounds(230, buttonY, 50, 40);
     PlayPauseButton.setBounds(290, buttonY, 100, 40);
     gotoendButton.setBounds(400, buttonY, 50, 40);
-    MuteButton.setBounds(460, buttonY, 80, 40);
-    loopButton.setBounds(550, buttonY, 100, 40);
+    skipBackButton.setBounds(460, buttonY, 80, 40);
+    skipForwardButton.setBounds(550, buttonY, 80, 40);
+    MuteButton.setBounds(640, buttonY, 80, 40);
+    loopButton.setBounds(730, buttonY, 100, 40);
     volumeSlider.setBounds(20, 10, getWidth() - 40, 30);
     positionSlider.setBounds(20, 50, getWidth() - 40, 30);
     timeLabel.setBounds(20, 80, getWidth() - 40, 20);
 	speedSlider.setBounds(20, 100, 150, 30);
     metadata.setBounds(10, 130, getWidth() - 20, 30);
-
+    setAButton.setBounds(30, 230, 60, 40);
+    setBButton.setBounds(100, 230, 60, 40);
+    clearABButton.setBounds(170, 230, 80, 40);
+    abLoopButton.setBounds(260, 230, 100, 40);
+    
 }
+
 
 void PlayerGUI::prepareToPlay(int samplesPerBlockExpected, double sampleRate)
 {
@@ -209,6 +219,42 @@ void PlayerGUI::buttonClicked(juce::Button* button)
         loopButton.setButtonText(isLooping ? "Loop: On" : "Loop: Off");
         PlayPauseButton.setButtonText(isplaying ? "Pause || " : "Play > ");
     }
+    else if (button == &setAButton)
+    {
+        double currentPos = playerAudio.getPostion();
+        playerAudio.setPointA(currentPos);
+    }
+    else if (button == &setBButton)
+    {
+        double currentPos = playerAudio.getPostion();
+        playerAudio.setPointB(currentPos);
+    }
+    else if (button == &clearABButton)
+    {
+        playerAudio.clearABPoints();
+        isABLooping = false;
+        abLoopButton.setButtonText("AB Loop: Off");
+    }
+    else if (button == &abLoopButton)
+    {
+        double pointA = playerAudio.getPointA();
+        double pointB = playerAudio.getPointB();
+
+        if (pointA >= 0.0 && pointB > pointA)
+        {
+            isABLooping = !isABLooping;
+            playerAudio.setABLoop(isABLooping);
+            abLoopButton.setButtonText(isABLooping ? "AB Loop: On" : "AB Loop: Off");
+        }
+    }
+    else if (button == &skipBackButton)
+    {
+        playerAudio.skipBackward(10.0);
+    }
+    else if (button == &skipForwardButton)
+    {
+        playerAudio.skipForward(10.0);
+    }
 }
 void PlayerGUI::sliderValueChanged(juce::Slider* slider)
 {
@@ -218,7 +264,7 @@ void PlayerGUI::sliderValueChanged(juce::Slider* slider)
     }
     else if (slider == &positionSlider)
     {
-        // User is dragging or clicked on the slider
+        
         isUserDragging = true;
         double totalLength = playerAudio.getTotalLength();
         double newPosition = positionSlider.getValue() * totalLength;
