@@ -1,12 +1,15 @@
 ﻿#include <JuceHeader.h>
 #include "PlayerGUI.h"
+#include "PlayerPlaylist.h"
+
 
 PlayerGUI::PlayerGUI()
 {
    
     for (auto* btn : { &loadButton, &restartButton, &gotostartButton, &PlayPauseButton,
                    &gotoendButton, &MuteButton, &loopButton, &setAButton, &setBButton,
-                   &clearABButton, &abLoopButton, &skipBackButton, &skipForwardButton })
+                   &clearABButton, &abLoopButton, &skipBackButton, &skipForwardButton,
+                   &nextButton, &prevButton })
     {
         btn->addListener(this);
         addAndMakeVisible(btn);
@@ -39,6 +42,8 @@ PlayerGUI::PlayerGUI()
 	speedSlider.addListener(this);
     addAndMakeVisible(speedSlider);
 
+    addAndMakeVisible(playlistBox);
+    playlistBox.setModel(this);
 }
 
 PlayerGUI::~PlayerGUI() {
@@ -67,7 +72,10 @@ void PlayerGUI::resized()
     setBButton.setBounds(100, 230, 60, 40);
     clearABButton.setBounds(170, 230, 80, 40);
     abLoopButton.setBounds(260, 230, 100, 40);
-    
+    playlistBox.setBounds(850, 90 , getWidth() - 40, 150);
+    prevButton.setBounds(930, 250, 100 , 30);
+    nextButton.setBounds(1050, 250, 100 , 30);
+
     
 }
 
@@ -91,20 +99,35 @@ void PlayerGUI::timerCallback()
     double currentPos = playerAudio.getPostion();
     double totalLength = playerAudio.getTotalLength();
 
-    if (totalLength > 0.0)
-    {
-        
+    if (totalLength > 0.0){
         if (!positionSlider.isMouseButtonDown())
         {
             isUserDragging = false;
             positionSlider.setValue(currentPos / totalLength, juce::dontSendNotification);
         }
 
-        
         timeLabel.setText(formatTime(currentPos) + " / " + formatTime(totalLength),
             juce::dontSendNotification);
+
+
+        if (currentPos >= totalLength - 0.05)
+        {
+            if (playlist.next())
+            {
+                auto file = playlist.getCurrentFile();
+                if (file.existsAsFile())
+                {
+                    playerAudio.loadFile(file);
+                    playerAudio.play();
+                    getMetadata(file);
+                    updatePlayPauseButton();
+                    playlistBox.selectRow(playlist.getCurrentIndex());
+                }
+            }
+        }
     }
 }
+
 
 juce::String PlayerGUI::formatTime(double seconds)
 {
@@ -172,20 +195,23 @@ void PlayerGUI::buttonClicked(juce::Button* button)
                 {
                     positionSlider.setValue(0.0, juce::dontSendNotification);
                     getMetadata(files);
+                    playlist.addFiles({ files });
+                    playlistBox.updateContent(); 
+                    playlistBox.selectRow(playlist.getNumFiles() - 1);
                 }
             });
-        PlayPauseButton.setButtonText("Pause || ");
+        updatePlayPauseButton();
     }
     else if (button == &restartButton)
     {
         playerAudio.restart();
-        PlayPauseButton.setButtonText("Pause || ");
+        updatePlayPauseButton();
     }
     else if (button == &gotostartButton)
     {
         playerAudio.gostart();
         playerAudio.stop();
-        PlayPauseButton.setButtonText("Play > ");
+        updatePlayPauseButton();
     }
     else if (button == &PlayPauseButton)
     {
@@ -205,7 +231,7 @@ void PlayerGUI::buttonClicked(juce::Button* button)
     {
         playerAudio.goend();
         playerAudio.stop();
-        PlayPauseButton.setButtonText("Play > ");
+        updatePlayPauseButton();
     }
     else if (button == &MuteButton)
     {
@@ -217,7 +243,7 @@ void PlayerGUI::buttonClicked(juce::Button* button)
         isLooping = !isLooping;
         playerAudio.loop();
         loopButton.setButtonText(isLooping ? "Loop: On" : "Loop: Off");
-        PlayPauseButton.setButtonText(isplaying ? "Pause || " : "Play > ");
+        updatePlayPauseButton();
     }
     else if (button == &setAButton)
     {
@@ -255,6 +281,37 @@ void PlayerGUI::buttonClicked(juce::Button* button)
     {
         playerAudio.skipForward(10.0);
     }
+    else if (button == &nextButton)
+    {
+        if (playlist.next())
+        {
+            auto file = playlist.getCurrentFile();
+            if (file.existsAsFile())
+            {
+                playerAudio.loadFile(file);
+                playerAudio.play();
+                getMetadata(file);
+                updatePlayPauseButton();
+                playlistBox.selectRow(playlist.getCurrentIndex());
+            }
+        }
+    }
+    else if (button == &prevButton)
+    {
+        if (playlist.previous())
+        {
+            auto file = playlist.getCurrentFile();
+            if (file.existsAsFile())
+            {
+                playerAudio.loadFile(file);
+                playerAudio.play();
+                getMetadata(file);
+                updatePlayPauseButton();
+                playlistBox.selectRow(playlist.getCurrentIndex());
+            }
+        }
+    }
+
 }
 void PlayerGUI::sliderValueChanged(juce::Slider* slider)
 {
@@ -277,3 +334,41 @@ void PlayerGUI::sliderValueChanged(juce::Slider* slider)
 		playerAudio.setSpeed(speedSlider.getValue());
     }
 }
+void PlayerGUI::updatePlayPauseButton()
+{
+    if (playerAudio.isPlaying())
+        PlayPauseButton.setButtonText("Pause || ");
+    else
+        PlayPauseButton.setButtonText("Play > ");
+}
+
+
+int PlayerGUI::getNumRows()
+{
+    return playlist.getNumFiles();
+}
+
+void PlayerGUI::paintListBoxItem(int rowNumber, juce::Graphics& g,
+    int width, int height, bool rowIsSelected)
+{
+    if (rowIsSelected)
+        g.fillAll(juce::Colours::lightblue);
+
+    auto file = playlist.getFile(rowNumber);
+    g.setColour(juce::Colours::white);
+    g.drawText(file.getFileName(), 5, 0, width - 10, height, juce::Justification::centredLeft);
+}
+
+void PlayerGUI::selectedRowsChanged(int lastRowSelected)
+{
+    playlist.setCurrentIndex(lastRowSelected);
+    auto file = playlist.getCurrentFile();
+    if (file.existsAsFile())
+    {
+        playerAudio.loadFile(file);
+        playerAudio.play();
+        getMetadata(file);
+        PlayPauseButton.setButtonText("Pause || ");
+    }
+}
+

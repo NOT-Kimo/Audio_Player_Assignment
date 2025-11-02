@@ -4,6 +4,10 @@
               addUsingNamespaceToJuceHeader="0" jucerFormatVersion="1">
   <MAINGROUP id="CDenuk" name="audio_Assign">
     <GROUP id="{87075F68-F1F3-2127-91B3-9D38AEB98A5C}" name="Source">
+      <FILE id="QlbwZm" name="PlayerPlaylist.cpp" compile="1" resource="0"
+            file="Source/PlayerPlaylist.cpp"/>
+      <FILE id="bse8If" name="PlayerPlaylist.h" compile="0" resource="0"
+            file="Source/PlayerPlaylist.h"/>
       <FILE id="Q0Q6UH" name="Main.cpp" compile="1" resource="0" file="Source/Main.cpp"/>
       <FILE id="u009Mo" name="MainComponent.h" compile="0" resource="0" file="Source/MainComponent.h"/>
       <FILE id="c9XeEC" name="MainComponent.cpp" compile="1" resource="0"
