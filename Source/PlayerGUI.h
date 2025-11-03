@@ -54,6 +54,10 @@ private:
     juce::ListBox playlistBox{ "Playlist", this };
     juce::TextButton nextButton{ "Next" };
     juce::TextButton prevButton{ "Previous" };
+    juce::TextButton sleepTimerButton{ "Sleep Timer" };
+    juce::ComboBox sleepTimerCombo;
+    bool sleepTimerActive = false;
+    juce::Time sleepTimerEndTime;
     
 public:
     void sliderValueChanged(juce::Slider* slider) override;
