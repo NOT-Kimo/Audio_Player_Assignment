@@ -51,12 +51,13 @@ PlayerGUI::PlayerGUI()
     sleepTimerButton.addListener(this);
     addAndMakeVisible(sleepTimerButton);
     sleepTimerCombo.addItem("Off", 1);
-    sleepTimerCombo.addItem("5 minutes", 2);
-    sleepTimerCombo.addItem("10 minutes", 3);
-    sleepTimerCombo.addItem("15 minutes", 4);
-    sleepTimerCombo.addItem("30 minutes", 5);
-    sleepTimerCombo.addItem("45 minutes", 6);
-    sleepTimerCombo.addItem("60 minutes", 7);
+    sleepTimerCombo.addItem("1 minute", 2);
+    sleepTimerCombo.addItem("5 minutes", 3);
+    sleepTimerCombo.addItem("10 minutes", 4);
+    sleepTimerCombo.addItem("15 minutes", 5);
+    sleepTimerCombo.addItem("30 minutes", 6);
+    sleepTimerCombo.addItem("45 minutes", 7);
+    sleepTimerCombo.addItem("60 minutes", 8);
     sleepTimerCombo.setSelectedId(1);
     addAndMakeVisible(sleepTimerCombo);
 }
@@ -93,12 +94,12 @@ void PlayerGUI::resized()
     clearABButton.setBounds(170, 230, 80, 40);
     abLoopButton.setBounds(260, 230, 100, 40);
 
-    playlistBox.setBounds(850, 90 , getWidth() - 40, 150);
-    prevButton.setBounds(930, 250, 100 , 30);
-    nextButton.setBounds(1050, 250, 100 , 30);
+    playlistBox.setBounds(850, 100 , getWidth() - 40, 150);
+    prevButton.setBounds(930, 260, 100 , 30);
+    nextButton.setBounds(1050, 260, 100 , 30);
 
-    sleepTimerButton.setBounds(640, 250, 100, 40);
-    sleepTimerCombo.setBounds(750, 250, 120, 40);
+    sleepTimerButton.setBounds(600, 250, 100, 40);
+    sleepTimerCombo.setBounds(710, 250, 120, 40);
 
 }
 
@@ -134,18 +135,28 @@ void PlayerGUI::timerCallback()
             juce::dontSendNotification);
 
 
-        if (currentPos >= totalLength - 0.05)
+
+        if (currentPos >= totalLength - 0.05 )
         {
-            if (playlist.next())
+            if (isLooping)
             {
-                auto file = playlist.getCurrentFile();
-                if (file.existsAsFile())
+                playerAudio.setPosition(0.0);
+                playerAudio.play();
+                updatePlayPauseButton();
+            }
+            else if (playlist.getNumFiles() > 1)
+            {
+                if (playlist.next())
                 {
-                    playerAudio.loadFile(file);
-                    playerAudio.play();
-                    getMetadata(file);
-                    updatePlayPauseButton();
-                    playlistBox.selectRow(playlist.getCurrentIndex());
+                    auto file = playlist.getCurrentFile();
+                    if (file.existsAsFile())
+                    {
+                        playerAudio.loadFile(file);
+                        playerAudio.play();
+                        getMetadata(file);
+                        updatePlayPauseButton();
+                        playlistBox.selectRow(playlist.getCurrentIndex());
+                    }
                 }
             }
         }
@@ -361,12 +372,13 @@ void PlayerGUI::buttonClicked(juce::Button* button)
             int minutes = 0;
             switch (selectedId)
             {
-            case 2: minutes = 5; break;
-            case 3: minutes = 10; break;
-            case 4: minutes = 15; break;
-            case 5: minutes = 30; break;
-            case 6: minutes = 45; break;
-            case 7: minutes = 60; break;
+            case 2: minutes = 1; break;
+            case 3: minutes = 5; break;
+            case 4: minutes = 10; break;
+            case 5: minutes = 15; break;
+            case 6: minutes = 30; break;
+            case 7: minutes = 45; break;
+            case 8: minutes = 60; break;
             }
 
             if (minutes > 0)
