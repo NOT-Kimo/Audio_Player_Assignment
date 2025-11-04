@@ -58,6 +58,8 @@ private:
     juce::ComboBox sleepTimerCombo;
     bool sleepTimerActive = false;
     juce::Time sleepTimerEndTime;
+    juce::TextButton exitButton{ "X" };
+
     
 public:
     void sliderValueChanged(juce::Slider* slider) override;

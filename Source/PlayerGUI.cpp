@@ -9,7 +9,7 @@ PlayerGUI::PlayerGUI()
     for (auto* btn : { &loadButton, &restartButton, &gotostartButton, &PlayPauseButton,
                    &gotoendButton, &MuteButton, &loopButton, &setAButton, &setBButton,
                    &clearABButton, &abLoopButton, &skipBackButton, &skipForwardButton,
-                   &nextButton, &prevButton })
+                   &nextButton, &prevButton , &exitButton })
     {
         btn->addListener(this);
         addAndMakeVisible(btn);
@@ -70,10 +70,10 @@ PlayerGUI::~PlayerGUI() {
 void PlayerGUI::resized()
 {
     int buttonY = 180;
-    volumeSlider.setBounds(20, 10, getWidth() - 40, 30);
+    volumeSlider.setBounds(20, 10, getWidth() - 50, 30);
 
-    positionSlider.setBounds(20, 50, getWidth() - 40, 30);
-    timeLabel.setBounds(20, 80, getWidth() - 40, 20);
+    positionSlider.setBounds(20, 50, getWidth() - 50, 30);
+    timeLabel.setBounds(20, 80, getWidth() - 50, 20);
 
     speedSlider.setBounds(20, 100, 150, 30);
 
@@ -101,6 +101,10 @@ void PlayerGUI::resized()
     sleepTimerButton.setBounds(600, 250, 100, 40);
     sleepTimerCombo.setBounds(710, 250, 120, 40);
 
+    exitButton.setBounds(getWidth() - 35, 5, 30, 25);
+    exitButton.setColour(juce::TextButton::buttonColourId, juce::Colours::darkred);
+    exitButton.setColour(juce::TextButton::textColourOnId, juce::Colours::white);
+    exitButton.setColour(juce::TextButton::textColourOffId, juce::Colours::white);
 }
 
 
@@ -388,7 +392,11 @@ void PlayerGUI::buttonClicked(juce::Button* button)
                 sleepTimerButton.setButtonText("Timer: " + juce::String(minutes) + "m");
             }
         }
-        }
+    }
+    else if (button == &exitButton)
+    {
+        juce::JUCEApplication::getInstance()->systemRequestedQuit();
+    }
 
 }
 void PlayerGUI::sliderValueChanged(juce::Slider* slider)
