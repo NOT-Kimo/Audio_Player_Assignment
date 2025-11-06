@@ -5,6 +5,13 @@
 
 PlayerGUI::PlayerGUI()
 {
+    juce::PropertiesFile::Options options;
+    options.applicationName = "SimpleAudioPlayer";
+    options.filenameSuffix = "settings";
+    options.osxLibrarySubFolder = "Application Support";
+    options.storageFormat = juce::PropertiesFile::storeAsXML;
+
+    settings = std::make_unique<juce::PropertiesFile>(options);
    
     for (auto* btn : { &loadButton, &restartButton, &gotostartButton, &PlayPauseButton,
                    &gotoendButton, &MuteButton, &loopButton, &setAButton, &setBButton,
@@ -60,9 +67,13 @@ PlayerGUI::PlayerGUI()
     sleepTimerCombo.addItem("60 minutes", 8);
     sleepTimerCombo.setSelectedId(1);
     addAndMakeVisible(sleepTimerCombo);
+
+    loadLastSession();
 }
 
-PlayerGUI::~PlayerGUI() {
+PlayerGUI::~PlayerGUI() 
+{
+    saveLastSession();
     stopTimer();
 }
 
@@ -238,12 +249,14 @@ void PlayerGUI::buttonClicked(juce::Button* button)
                 auto files = chooser.getResult();
                 if (files.existsAsFile())
                 {
+                    lastLoadedFile = files;
                     playerAudio.loadFile(files);
                     positionSlider.setValue(0.0, juce::dontSendNotification);
                    
                 }
                 if (playerAudio.loadFile(files))
-                {
+                {   
+                    lastLoadedFile = files;
                     positionSlider.setValue(0.0, juce::dontSendNotification);
                     getMetadata(files);
                     playlist.addFiles({ files });
@@ -457,4 +470,44 @@ void PlayerGUI::selectedRowsChanged(int lastRowSelected)
         PlayPauseButton.setButtonText("Pause || ");
     }
 }
+
+void PlayerGUI::saveLastSession()
+{
+    if (!settings) return;
+
+    if (lastLoadedFile.existsAsFile())
+    {
+        settings->setValue("lastFile", lastLoadedFile.getFullPathName());
+        settings->setValue("lastPosition", playerAudio.getPostion());
+        settings->saveIfNeeded();
+    }
+}
+
+void PlayerGUI::loadLastSession()
+{
+    if (!settings) return;
+
+    juce::String filePath = settings->getValue("lastFile");
+    if (filePath.isNotEmpty())
+    {
+        juce::File file(filePath);
+        if (file.existsAsFile())
+        {
+            lastLoadedFile = file;
+            playerAudio.loadFile(file);
+
+            playlist.addFiles({ file });
+            playlistBox.updateContent();
+            playlistBox.selectRow(playlist.getNumFiles() - 1);
+
+            double lastPos = settings->getDoubleValue("lastPosition", 0.0);
+            playerAudio.setPosition(lastPos);
+            positionSlider.setValue(lastPos / playerAudio.getTotalLength(), juce::dontSendNotification);
+
+            getMetadata(file);
+            updatePlayPauseButton();
+        }
+    }
+}
+
 

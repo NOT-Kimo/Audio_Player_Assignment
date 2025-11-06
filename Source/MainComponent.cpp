@@ -39,12 +39,15 @@ void MainComponent::getNextAudioBlock(const juce::AudioSourceChannelInfo& buffer
         bufferToFill.buffer->addFrom(channel, bufferToFill.startSample, tempBuffer, channel, 0, bufferToFill.numSamples);
     }
 
-    tempBuffer.clear();
-    player2.getnextAudioBlock(tempInfo);
-
-    for (int channel = 0; channel < bufferToFill.buffer->getNumChannels(); ++channel)
+    if (player2.isVisible())
     {
-        bufferToFill.buffer->addFrom(channel, bufferToFill.startSample, tempBuffer, channel, 0, bufferToFill.numSamples);
+        tempBuffer.clear();
+        player2.getnextAudioBlock(tempInfo);
+
+        for (int channel = 0; channel < bufferToFill.buffer->getNumChannels(); ++channel)
+        {
+            bufferToFill.buffer->addFrom(channel, bufferToFill.startSample, tempBuffer, channel, 0, bufferToFill.numSamples);
+        }
     }
     
 	

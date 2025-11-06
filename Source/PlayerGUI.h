@@ -60,7 +60,11 @@ private:
     juce::Time sleepTimerEndTime;
     juce::TextButton exitButton{ "X" };
 
-    
+    std::unique_ptr<juce::PropertiesFile> settings;
+    juce::File lastLoadedFile;
+    void saveLastSession();
+    void loadLastSession();
+
 public:
     void sliderValueChanged(juce::Slider* slider) override;
     void buttonClicked(juce::Button* button) override;
