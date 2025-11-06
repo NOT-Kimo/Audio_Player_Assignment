@@ -16,11 +16,24 @@ PlayerGUI::PlayerGUI()
     for (auto* btn : { &loadButton, &restartButton, &gotostartButton, &PlayPauseButton,
                    &gotoendButton, &MuteButton, &loopButton, &setAButton, &setBButton,
                    &clearABButton, &abLoopButton, &skipBackButton, &skipForwardButton,
-                   &nextButton, &prevButton , &exitButton })
+                   &clearplaylistButton,&nextButton, &prevButton , &exitButton ,
+                   &addMarkerButton , &deleteMarkerButton })
     {
         btn->addListener(this);
         addAndMakeVisible(btn);
     }
+
+    volumelabel.setText("Volume", juce::dontSendNotification);
+    speedLabel.setText("Speed", juce::dontSendNotification);
+    playlistLabel.setText("Playlist", juce::dontSendNotification);
+    markersLabel.setText("Markers List", juce::dontSendNotification);
+
+    for (auto* label : { &volumelabel, &speedLabel ,&playlistLabel ,&markersLabel })
+    {
+        label->setFont(juce::Font(16.0f, juce::Font::bold));
+        addAndMakeVisible(label);
+    }
+
     volumeSlider.setRange(0.0, 1.0, 0.01);
     volumeSlider.setValue(0.5);
     volumeSlider.addListener(this);
@@ -55,6 +68,10 @@ PlayerGUI::PlayerGUI()
     addAndMakeVisible(playlistBox);
     playlistBox.setModel(this);
 
+    markerListModel = MarkerListModel(this);
+    markerListBox.setModel(&markerListModel);
+    addAndMakeVisible(markerListBox);
+
     sleepTimerButton.addListener(this);
     addAndMakeVisible(sleepTimerButton);
     sleepTimerCombo.addItem("Off", 1);
@@ -80,37 +97,46 @@ PlayerGUI::~PlayerGUI()
 
 void PlayerGUI::resized()
 {
-    int buttonY = 180;
-    volumeSlider.setBounds(20, 10, getWidth() - 50, 30);
+    volumelabel.setBounds(20, 10, 90 , 30);
+    volumeSlider.setBounds(95, 10, getWidth() - 150, 30);
 
     positionSlider.setBounds(20, 50, getWidth() - 50, 30);
-    timeLabel.setBounds(20, 80, getWidth() - 50, 20);
+    timeLabel.setBounds(20, 85, getWidth() - 50, 20);
 
-    speedSlider.setBounds(20, 100, 150, 30);
+    speedLabel.setBounds(20, 95 , 60, 30);
+    speedSlider.setBounds(95, 95, 200, 30);
 
     metadata.setBounds(10, 130, getWidth() - 20, 30);
 
-    loadButton.setBounds(30, buttonY, 100, 40);
-    restartButton.setBounds(140, buttonY, 80, 40);
-    gotostartButton.setBounds(230, buttonY, 50, 40);
-    PlayPauseButton.setBounds(290, buttonY, 100, 40);
-    gotoendButton.setBounds(400, buttonY, 50, 40);
-    skipBackButton.setBounds(460, buttonY, 80, 40);
-    skipForwardButton.setBounds(550, buttonY, 80, 40);
-    MuteButton.setBounds(640, buttonY, 80, 40);
-    loopButton.setBounds(730, buttonY, 100, 40);
+    int row1 = 180;
+    loadButton.setBounds(250, row1, 100, 40);
+    restartButton.setBounds(360, row1, 60, 40);
+    gotostartButton.setBounds(430, row1, 50, 40);
+    skipBackButton.setBounds(490, row1, 70, 40);
+    PlayPauseButton.setBounds(570, row1, 100, 40);
+    skipForwardButton.setBounds(680, row1, 70, 40);
+    gotoendButton.setBounds(760, row1, 50, 40);
+    loopButton.setBounds(820, row1, 80, 40);
 
-    setAButton.setBounds(30, 230, 60, 40);
-    setBButton.setBounds(100, 230, 60, 40);
-    clearABButton.setBounds(170, 230, 80, 40);
-    abLoopButton.setBounds(260, 230, 100, 40);
+    int row2 = 230;
+    setAButton.setBounds(250, row2, 60, 40);
+    setBButton.setBounds(320, row2, 60, 40);
+    clearABButton.setBounds(390, row2, 80, 40);
+    abLoopButton.setBounds(480, row2, 100, 40);
+    MuteButton.setBounds(590, row2, 70, 40);
+    sleepTimerButton.setBounds(670, row2, 100, 40);
+    sleepTimerCombo.setBounds(780, row2, 120, 40);
 
-    playlistBox.setBounds(850, 100 , getWidth() - 40, 150);
-    prevButton.setBounds(930, 260, 100 , 30);
-    nextButton.setBounds(1050, 260, 100 , 30);
+    playlistLabel.setBounds(1040, 130, 200, 15);
+    playlistBox.setBounds(920 , 150 , 320, 120);
+    prevButton.setBounds(930, 280, 100 , 30);
+    nextButton.setBounds(1040, 280, 100 , 30);
+    clearplaylistButton.setBounds(1150, 280, 80, 30);
 
-    sleepTimerButton.setBounds(600, 250, 100, 40);
-    sleepTimerCombo.setBounds(710, 250, 120, 40);
+    markersLabel.setBounds(80, 130, 200, 15);
+    markerListBox.setBounds(30, 150 , 200 , 120);
+    addMarkerButton.setBounds(40, 280 , 80, 30);
+    deleteMarkerButton.setBounds(130, 280 , 90, 30);
 
     exitButton.setBounds(getWidth() - 35, 5, 30, 25);
     exitButton.setColour(juce::TextButton::buttonColourId, juce::Colours::darkred);
@@ -171,6 +197,8 @@ void PlayerGUI::timerCallback()
                         getMetadata(file);
                         updatePlayPauseButton();
                         playlistBox.selectRow(playlist.getCurrentIndex());
+                        markers.clear();
+                        updateMarkerList();
                     }
                 }
             }
@@ -357,6 +385,8 @@ void PlayerGUI::buttonClicked(juce::Button* button)
                 getMetadata(file);
                 updatePlayPauseButton();
                 playlistBox.selectRow(playlist.getCurrentIndex());
+                markers.clear();
+                updateMarkerList();
             }
         }
     }
@@ -374,6 +404,33 @@ void PlayerGUI::buttonClicked(juce::Button* button)
                 playlistBox.selectRow(playlist.getCurrentIndex());
             }
         }
+    }
+    else if (button == &clearplaylistButton)
+    {
+        playerAudio.stop();
+        playerAudio.setPosition(0.0);
+
+        playlist.clear();
+        playlistBox.updateContent();
+        markers.clear();
+        updateMarkerList();
+
+        metadata.setText("No file loaded", juce::dontSendNotification);
+        timeLabel.setText("00:00 / 00:00", juce::dontSendNotification);
+        positionSlider.setValue(0.0, juce::dontSendNotification);
+        volumeSlider.setValue(0.5, juce::dontSendNotification);
+        speedSlider.setValue(1.0, juce::dontSendNotification);
+
+        lastLoadedFile = juce::File();
+        isLooping = false;
+        isABLooping = false;
+        playerAudio.clearABPoints();
+
+        loopButton.setButtonText("Loop: Off");
+        abLoopButton.setButtonText("AB Loop: Off");
+
+        if (settings) settings->removeValue("lastFile");
+        updatePlayPauseButton();
     }
     else if (button == &sleepTimerButton)
     {
@@ -404,6 +461,23 @@ void PlayerGUI::buttonClicked(juce::Button* button)
                 sleepTimerEndTime = juce::Time::getCurrentTime() + juce::RelativeTime::minutes(minutes);
                 sleepTimerButton.setButtonText("Timer: " + juce::String(minutes) + "m");
             }
+        }
+    }
+    else if (button == &addMarkerButton)
+    {
+        double pos = playerAudio.getPostion();
+        juce::String label = "Marker " + juce::String(markers.size() + 1) +
+            " (" + formatTime(pos) + ")";
+        markers.add({ label, pos });
+        updateMarkerList();
+        }
+    else if (button == &deleteMarkerButton)
+    {
+        int selected = markerListBox.getSelectedRow();
+        if (selected >= 0 && selected < markers.size())
+        {
+            markers.remove(selected);
+            updateMarkerList();
         }
     }
     else if (button == &exitButton)
@@ -451,7 +525,7 @@ void PlayerGUI::paintListBoxItem(int rowNumber, juce::Graphics& g,
     int width, int height, bool rowIsSelected)
 {
     if (rowIsSelected)
-        g.fillAll(juce::Colours::lightblue);
+        g.fillAll(juce::Colours::darkorange);
 
     auto file = playlist.getFile(rowNumber);
     g.setColour(juce::Colours::white);
@@ -510,4 +584,42 @@ void PlayerGUI::loadLastSession()
     }
 }
 
+
+int PlayerGUI::MarkerListModel::getNumRows()
+{
+    return owner ? owner->markers.size() : 0;
+}
+
+void PlayerGUI::MarkerListModel::paintListBoxItem(int rowNumber, juce::Graphics& g,
+    int width, int height, bool rowIsSelected)
+{
+    if (!owner) return;
+
+    if (rowIsSelected)
+        g.fillAll(juce::Colours::darkorange);
+
+    if (rowNumber >= 0 && rowNumber < owner->markers.size())
+    {
+        g.setColour(juce::Colours::white);
+        g.drawText(owner->markers[rowNumber].label, 5, 0, width - 10, height, juce::Justification::centredLeft);
+    }
+}
+
+void PlayerGUI::MarkerListModel::selectedRowsChanged(int lastRowSelected)
+{
+    if (!owner) return;
+
+    if (lastRowSelected >= 0 && lastRowSelected < owner->markers.size())
+    {
+        owner->playerAudio.setPosition(owner->markers[lastRowSelected].timeInSeconds);
+        owner->playerAudio.play();
+        owner->updatePlayPauseButton();
+    }
+}
+
+void PlayerGUI::updateMarkerList()
+{
+    markerListBox.updateContent();
+    markerListBox.repaint();
+}
 
