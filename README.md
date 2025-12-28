@@ -72,3 +72,14 @@ The application is structured into several key components using the JUCE framewo
     *   Navigate to the generated build directory (e.g., `Builds/VisualStudio2022/`).
     *   Open the solution file (e.g., `NewProject.sln`).
     *   Build and run the project from your IDE.
+
+
+    ## 📄 License
+
+This project is created for educational purposes as part of a university assignment.
+
+---
+
+**Course**: CS213
+**Institution**: Faculty of Computers and Artificial Intelligence Cairo University
+**Academic Year**: 2024
