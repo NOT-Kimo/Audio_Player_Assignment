@@ -1,6 +1,5 @@
 # Audio Player Assignment
 
-[![Ask DeepWiki](https://devin.ai/assets/askdeepwiki.png)](https://deepwiki.com/NOT-Kimo/Audio_Player_Assignment)
 
 This repository contains a feature-rich desktop audio player application built with the C++ JUCE framework. It provides a comprehensive set of controls for audio playback, playlist management, and advanced features like A-B looping and session persistence. The application supports running two independent player instances simultaneously.
 
